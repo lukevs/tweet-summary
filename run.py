@@ -1,19 +1,41 @@
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional
 
 import typer
+
+from twitter import fetch_most_liked_tweet, fetch_recent_tweets
 
 
 app = typer.Typer()
 
 
-@app.command()
-def summarize(usernames: typer.FileText, since: datetime = typer.Argument(yesterday)):
-    typer.echo(usernames.read())
-
-
 def yesterday() -> str:
-    return (datetime.now() - timedelta(1)).strftime("%Y-%m-%d %H:%M:%S")
+    return (datetime.now(timezone.utc) - timedelta(1)).strftime("%Y-%m-%d %H:%M:%S")
+
+
+@app.command()
+def fetch(
+    screen_names: typer.FileText,
+    since: datetime = typer.Argument(yesterday),
+):
+    tweets = fetch_recent_tweets(
+        screen_names.read().split(), since,
+    )
+
+    for tweet in tweets:
+        typer.echo(tweet)
+
+
+@app.command()
+def summarize(
+    screen_names: typer.FileText,
+    since: datetime = typer.Argument(yesterday),
+):
+    tweet = fetch_most_liked_tweet(
+        screen_names.read().split(), since,
+    )
+
+    typer.echo(f"Most liked tweet since {since}: {tweet}")
 
 
 if __name__ == "__main__":
