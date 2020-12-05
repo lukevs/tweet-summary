@@ -24,7 +24,7 @@ def fetch(
     )
 
     for tweet in tweets:
-        typer.echo(tweet)
+        typer.echo(tweet.json())
 
 
 @app.command()
@@ -38,7 +38,7 @@ def summarize(
 
     summary = generate_tweet_summary(tweets)
 
-    typer.echo(f"Summary: {summary}")
+    typer.echo(summary.json())
 
 
 if __name__ == "__main__":
