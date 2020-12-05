@@ -11,7 +11,7 @@ def generate_tweet_summary(
     tweets: Iterator[Tweet], top_n: int = 10,
 ) -> TweetSummary:
     (
-            like_tweets, retweet_tweets, reference_tweets,
+        like_tweets, retweet_tweets, reference_tweets,
     ) = tee(tweets, 3)
 
     most_liked_tweets = get_top_n_tweets(
