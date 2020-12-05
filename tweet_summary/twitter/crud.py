@@ -16,31 +16,19 @@ TWITTER_TOKEN = os.getenv("TWITTER_TOKEN")
 def fetch_recent_tweets(
     screen_names: List[str], since: datetime,
 ) -> Iterator[Tweet]:
-    total_queries = 0
-    total_tweets = 0
-
     for query in _generate_from_or_queries(screen_names):
         next_token = None
 
         while True:
-            total_queries += 1
             tweet_page = _fetch_recent_tweets_page(
                     query, since, next_token,
             )
-
-            total_tweets += len(tweet_page.data)
 
             yield from tweet_page.data
 
             next_token = tweet_page.meta.next_token
             if next_token is None:
                 break
-
-    print(
-        "Fetch stats:\n" +
-        f"Total queries: {total_queries}\n" +
-        f"Total tweets: {total_tweets}"
-    )
 
 
 def _fetch_recent_tweets_page(
@@ -49,7 +37,7 @@ def _fetch_recent_tweets_page(
     params = {
         "query": query,
         "start_time": f"{start_time.isoformat()}Z",
-        "tweet.fields": "public_metrics",
+        "tweet.fields": "public_metrics,referenced_tweets",
         "max_results": 100,
     }
 
