@@ -13,20 +13,6 @@ RECENT_SEARCH_ENDPOINT_URL = f"{API_BASE_URL}/2/tweets/search/recent"
 TWITTER_TOKEN = os.getenv("TWITTER_TOKEN")
 
 
-def fetch_most_liked_tweet(
-    screen_names: List[str], since: datetime,
-) -> Optional[Tweet]:
-    most_liked_tweet = None
-    most_likes = 0
-
-    for tweet in fetch_recent_tweets(screen_names, since):
-        if tweet.public_metrics.like_count > most_likes:
-            most_liked_tweet = tweet
-            most_likes = tweet.public_metrics.like_count
-
-    return most_liked_tweet
-
-
 def fetch_recent_tweets(
     screen_names: List[str], since: datetime,
 ) -> Iterator[Tweet]:
