@@ -21,7 +21,7 @@ def fetch_recent_tweets(
 
         while True:
             tweet_page = _fetch_recent_tweets_page(
-                    query, since, next_token,
+                query, since, next_token,
             )
 
             yield from tweet_page.data
@@ -34,10 +34,16 @@ def fetch_recent_tweets(
 def _fetch_recent_tweets_page(
     query: str, start_time: datetime, next_token: Optional[str] = None,
 ) -> TweetPage:
+    tweet_fields = ",".join([
+        "public_metrics",
+        "referenced_tweets",
+        "entities",
+    ])
+
     params = {
         "query": query,
         "start_time": f"{start_time.isoformat()}Z",
-        "tweet.fields": "public_metrics,referenced_tweets,entities",
+        "tweet.fields": tweet_fields,
         "max_results": 100,
     }
 

@@ -4,15 +4,21 @@ from typing import Callable, Iterator, List
 
 from tweet_summary.twitter import Tweet
 
-from .schemas import LinkSummary, ReferencedTweetSummary, TweetSummary
+from .schemas import (
+    LinkSummary, MentionSummary, ReferencedTweetSummary, TweetSummary,
+)
 
 
 def generate_tweet_summary(
     tweets: Iterator[Tweet], top_n: int = 10,
 ) -> TweetSummary:
     (
-        like_tweets, retweet_tweets, reference_tweets, link_tweets,
-    ) = tee(tweets, 4)
+        like_tweets,
+        retweet_tweets,
+        reference_tweets,
+        link_tweets,
+        mention_tweets,
+    ) = tee(tweets, 5)
 
     most_liked_tweets = get_top_n_tweets(
         like_tweets,
@@ -34,11 +40,16 @@ def generate_tweet_summary(
         link_tweets, top_n,
     )
 
+    most_mentioned_screen_names = get_most_mentioned_screen_names(
+        mention_tweets, top_n,
+    )
+
     return TweetSummary(
         most_liked_tweets=most_liked_tweets,
         most_retweeted_tweets=most_retweeted_tweets,
         most_referenced_tweets=most_referenced_tweets,
         most_referenced_links=most_referenced_links,
+        most_mentioned_screen_names=most_mentioned_screen_names,
     )
 
 
@@ -83,4 +94,20 @@ def get_most_referenced_links(
     return [
         LinkSummary(url=url, total_references=count)
         for url, count in counter.most_common(top_n)
+    ]
+
+
+def get_most_mentioned_screen_names(
+    tweets: Iterator[Tweet], top_n: int,
+) -> List[MentionSummary]:
+    counter = Counter(
+        mention.username
+        for tweet in tweets
+        if tweet.entities is not None
+        for mention in tweet.entities.mentions
+    )
+
+    return [
+        MentionSummary(screen_name=screen_name, total_references=count)
+        for screen_name, count in counter.most_common(top_n)
     ]

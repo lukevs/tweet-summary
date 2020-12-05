@@ -3,6 +3,10 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
+class TweetMention(BaseModel):
+    username: str
+
+
 class TweetEntityUrl(BaseModel):
     expanded_url: str
     unwound_url: Optional[str]
@@ -10,6 +14,7 @@ class TweetEntityUrl(BaseModel):
 
 class TweetEntities(BaseModel):
     urls: List[TweetEntityUrl] = []
+    mentions: List[TweetMention] = []
 
 
 class ReferencedTweet(BaseModel):
