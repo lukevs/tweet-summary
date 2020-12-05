@@ -3,6 +3,15 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
+class TweetEntityUrl(BaseModel):
+    expanded_url: str
+    unwound_url: Optional[str]
+
+
+class TweetEntities(BaseModel):
+    urls: List[TweetEntityUrl] = []
+
+
 class ReferencedTweet(BaseModel):
     id: str
 
@@ -16,6 +25,7 @@ class Tweet(BaseModel):
     id: str
     public_metrics: TweetPublicMetrics
     referenced_tweets: List[ReferencedTweet] = []
+    entities: Optional[TweetEntities]
 
 
 class TweetPageMeta(BaseModel):

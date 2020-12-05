@@ -37,7 +37,7 @@ def _fetch_recent_tweets_page(
     params = {
         "query": query,
         "start_time": f"{start_time.isoformat()}Z",
-        "tweet.fields": "public_metrics,referenced_tweets",
+        "tweet.fields": "public_metrics,referenced_tweets,entities",
         "max_results": 100,
     }
 

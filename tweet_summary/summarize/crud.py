@@ -4,15 +4,15 @@ from typing import Callable, Iterator, List
 
 from tweet_summary.twitter import Tweet
 
-from .schemas import ReferencedTweetSummary, TweetSummary
+from .schemas import LinkSummary, ReferencedTweetSummary, TweetSummary
 
 
 def generate_tweet_summary(
     tweets: Iterator[Tweet], top_n: int = 10,
 ) -> TweetSummary:
     (
-        like_tweets, retweet_tweets, reference_tweets,
-    ) = tee(tweets, 3)
+        like_tweets, retweet_tweets, reference_tweets, link_tweets,
+    ) = tee(tweets, 4)
 
     most_liked_tweets = get_top_n_tweets(
         like_tweets,
@@ -30,10 +30,15 @@ def generate_tweet_summary(
         reference_tweets, top_n,
     )
 
+    most_referenced_links = get_most_referenced_links(
+        link_tweets, top_n,
+    )
+
     return TweetSummary(
         most_liked_tweets=most_liked_tweets,
         most_retweeted_tweets=most_retweeted_tweets,
         most_referenced_tweets=most_referenced_tweets,
+        most_referenced_links=most_referenced_links,
     )
 
 
@@ -49,7 +54,7 @@ def get_top_n_tweets(
 
 def get_most_referenced_tweet_ids(
     tweets: Iterator[Tweet], top_n: int,
-) -> List[str]:
+) -> List[ReferencedTweetSummary]:
     counter = Counter(
         referenced_tweet.id
         for tweet in tweets
@@ -62,4 +67,20 @@ def get_most_referenced_tweet_ids(
             total_references=count,
         )
         for tweet_id, count in counter.most_common(top_n)
+    ]
+
+
+def get_most_referenced_links(
+    tweets: Iterator[Tweet], top_n: int,
+) -> List[LinkSummary]:
+    counter = Counter(
+        url.unwound_url or url.expanded_url
+        for tweet in tweets
+        if tweet.entities is not None
+        for url in tweet.entities.urls
+    )
+
+    return [
+        LinkSummary(url=url, total_references=count)
+        for url, count in counter.most_common(top_n)
     ]
