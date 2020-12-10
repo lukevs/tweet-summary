@@ -18,7 +18,8 @@ def generate_tweet_summary(
         reference_tweets,
         link_tweets,
         mention_tweets,
-    ) = tee(tweets, 5)
+        count_tweets,
+    ) = tee(tweets, 6)
 
     most_liked_tweets = get_top_n_tweets(
         like_tweets,
@@ -44,7 +45,10 @@ def generate_tweet_summary(
         mention_tweets, top_n,
     )
 
+    total_tweets = get_total_tweets(count_tweets)
+
     return TweetSummary(
+        total_tweets=total_tweets,
         most_liked_tweets=most_liked_tweets,
         most_retweeted_tweets=most_retweeted_tweets,
         most_referenced_tweets=most_referenced_tweets,
@@ -111,3 +115,7 @@ def get_most_mentioned_screen_names(
         MentionSummary(screen_name=screen_name, total_references=count)
         for screen_name, count in counter.most_common(top_n)
     ]
+
+
+def get_total_tweets(tweets: Iterator[Tweet]) -> int:
+    return sum(1 for _ in tweets)

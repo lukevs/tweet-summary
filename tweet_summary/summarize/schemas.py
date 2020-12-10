@@ -21,6 +21,7 @@ class ReferencedTweetSummary(BaseModel):
 
 
 class TweetSummary(BaseModel):
+    total_tweets: int
     most_liked_tweets: List[Tweet]
     most_retweeted_tweets: List[Tweet]
     most_referenced_tweets: List[ReferencedTweetSummary]
