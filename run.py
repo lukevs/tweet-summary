@@ -3,7 +3,8 @@ from typing import List, Optional
 
 import typer
 
-from twitter import fetch_most_liked_tweet, fetch_recent_tweets
+from tweet_summary.twitter import fetch_recent_tweets
+from tweet_summary.summarize import generate_tweet_summary
 
 
 app = typer.Typer()
@@ -23,7 +24,7 @@ def fetch(
     )
 
     for tweet in tweets:
-        typer.echo(tweet)
+        typer.echo(tweet.json())
 
 
 @app.command()
@@ -31,11 +32,13 @@ def summarize(
     screen_names: typer.FileText,
     since: datetime = typer.Argument(yesterday),
 ):
-    tweet = fetch_most_liked_tweet(
+    tweets = fetch_recent_tweets(
         screen_names.read().split(), since,
     )
 
-    typer.echo(f"Most liked tweet since {since}: {tweet}")
+    summary = generate_tweet_summary(tweets)
+
+    typer.echo(summary.json())
 
 
 if __name__ == "__main__":

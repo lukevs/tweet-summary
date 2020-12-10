@@ -13,20 +13,6 @@ RECENT_SEARCH_ENDPOINT_URL = f"{API_BASE_URL}/2/tweets/search/recent"
 TWITTER_TOKEN = os.getenv("TWITTER_TOKEN")
 
 
-def fetch_most_liked_tweet(
-    screen_names: List[str], since: datetime,
-) -> Optional[Tweet]:
-    most_liked_tweet = None
-    most_likes = 0
-
-    for tweet in fetch_recent_tweets(screen_names, since):
-        if tweet.public_metrics.like_count > most_likes:
-            most_liked_tweet = tweet
-            most_likes = tweet.public_metrics.like_count
-
-    return most_liked_tweet
-
-
 def fetch_recent_tweets(
     screen_names: List[str], since: datetime,
 ) -> Iterator[Tweet]:
@@ -35,7 +21,7 @@ def fetch_recent_tweets(
 
         while True:
             tweet_page = _fetch_recent_tweets_page(
-                    query, since, next_token,
+                query, since, next_token,
             )
 
             yield from tweet_page.data
@@ -48,10 +34,16 @@ def fetch_recent_tweets(
 def _fetch_recent_tweets_page(
     query: str, start_time: datetime, next_token: Optional[str] = None,
 ) -> TweetPage:
+    tweet_fields = ",".join([
+        "public_metrics",
+        "referenced_tweets",
+        "entities",
+    ])
+
     params = {
         "query": query,
         "start_time": f"{start_time.isoformat()}Z",
-        "tweet.fields": "public_metrics",
+        "tweet.fields": tweet_fields,
         "max_results": 100,
     }
 
