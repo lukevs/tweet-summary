@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Iterator, List, Optional
 
 import requests
+from ratelimit import limits, sleep_and_retry
 
 from .schemas import Tweet, TweetPage
 
@@ -16,9 +17,10 @@ TWITTER_TOKEN = os.getenv("TWITTER_TOKEN")
 def fetch_recent_tweets(
     screen_names: List[str], since: datetime,
 ) -> Iterator[Tweet]:
-    for query in _generate_from_or_queries(screen_names):
+    for query_index, query in enumerate(_generate_from_or_queries(screen_names)):
         next_token = None
 
+        page_index = 0
         while True:
             tweet_page = _fetch_recent_tweets_page(
                 query, since, next_token,
@@ -30,7 +32,11 @@ def fetch_recent_tweets(
             if next_token is None:
                 break
 
+            page_index += 1
 
+
+@sleep_and_retry
+@limits(calls=1, period=2)
 def _fetch_recent_tweets_page(
     query: str, start_time: datetime, next_token: Optional[str] = None,
 ) -> TweetPage:
@@ -54,11 +60,14 @@ def _fetch_recent_tweets_page(
     if next_token is not None:
         params["next_token"] = next_token
 
-    response = requests.get(
-        RECENT_SEARCH_ENDPOINT_URL,
-        headers=headers,
-        params=params,
-    )
+    try:
+        response = requests.get(
+            RECENT_SEARCH_ENDPOINT_URL,
+            headers=headers,
+            params=params,
+        )
+    except Expection as e:
+        import pdb; pdb.set_trace()
 
     if response.ok:
         return TweetPage(**response.json())
