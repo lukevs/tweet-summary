@@ -12,48 +12,38 @@ from .schemas import (
 def generate_tweet_summary(
     tweets: Iterator[Tweet], top_n: int = 10,
 ) -> TweetSummary:
-    (
-        like_tweets,
-        retweet_tweets,
-        reference_tweets,
-        link_tweets,
-        mention_tweets,
-        count_tweets,
-    ) = tee(tweets, 6)
+    summarizers = {
+        "total_tweets": get_total_tweets,
+        "most_liked_tweets": get_most_liked_tweets,
+        "most_retweeted_tweets": get_most_retweeted_tweets,
+        "most_referenced_tweets": get_most_referenced_tweet_ids,
+        "most_referenced_links": get_most_referenced_links,
+        "most_mentioned_screen_names": get_most_mentioned_screen_names,
+    }
 
-    most_liked_tweets = get_top_n_tweets(
-        like_tweets,
-        top_n,
+    tweet_iterators = tee(tweets, len(summarizers))
+
+    summaries = {}
+
+    for (key, summarize), tweets in zip(summarizers.items(), tweet_iterators):
+        summaries[key] = summarize(tweets)
+
+    return TweetSummary(**summaries)
+
+
+def get_most_liked_tweets(tweets: Iterator[Tweet]) -> List[Tweet]:
+    return get_top_n_tweets(
+        tweets,
+        top_n=10,
         key=lambda tweet: tweet.public_metrics.like_count,
     )
 
-    most_retweeted_tweets = get_top_n_tweets(
-        retweet_tweets,
-        top_n,
+
+def get_most_retweeted_tweets(tweets: Iterator[Tweet]) -> List[Tweet]:
+    return get_top_n_tweets(
+        tweets,
+        top_n=10,
         key=lambda tweet: tweet.public_metrics.retweet_count,
-    )
-
-    most_referenced_tweets = get_most_referenced_tweet_ids(
-        reference_tweets, top_n,
-    )
-
-    most_referenced_links = get_most_referenced_links(
-        link_tweets, top_n,
-    )
-
-    most_mentioned_screen_names = get_most_mentioned_screen_names(
-        mention_tweets, top_n,
-    )
-
-    total_tweets = get_total_tweets(count_tweets)
-
-    return TweetSummary(
-        total_tweets=total_tweets,
-        most_liked_tweets=most_liked_tweets,
-        most_retweeted_tweets=most_retweeted_tweets,
-        most_referenced_tweets=most_referenced_tweets,
-        most_referenced_links=most_referenced_links,
-        most_mentioned_screen_names=most_mentioned_screen_names,
     )
 
 
@@ -68,7 +58,7 @@ def get_top_n_tweets(
 
 
 def get_most_referenced_tweet_ids(
-    tweets: Iterator[Tweet], top_n: int,
+    tweets: Iterator[Tweet], top_n: int = 10,
 ) -> List[ReferencedTweetSummary]:
     counter = Counter(
         referenced_tweet.id
@@ -86,7 +76,7 @@ def get_most_referenced_tweet_ids(
 
 
 def get_most_referenced_links(
-    tweets: Iterator[Tweet], top_n: int,
+    tweets: Iterator[Tweet], top_n: int = 10,
 ) -> List[LinkSummary]:
     counter = Counter(
         url.unwound_url or url.expanded_url
@@ -102,7 +92,7 @@ def get_most_referenced_links(
 
 
 def get_most_mentioned_screen_names(
-    tweets: Iterator[Tweet], top_n: int,
+    tweets: Iterator[Tweet], top_n: int = 10,
 ) -> List[MentionSummary]:
     counter = Counter(
         mention.username
