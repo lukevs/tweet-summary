@@ -1,6 +1,7 @@
 from collections import Counter
 from itertools import islice, tee
 from typing import Callable, Iterator, List
+from urllib.parse import urlparse
 
 from tweet_summary.twitter import Tweet
 
@@ -19,6 +20,7 @@ def generate_tweet_summary(
         "most_referenced_tweets": get_most_referenced_tweet_ids,
         "most_referenced_links": get_most_referenced_links,
         "most_mentioned_screen_names": get_most_mentioned_screen_names,
+        "most_referenced_arxiv_links": get_most_referenced_arxiv_links,
     }
 
     tweet_iterators = tee(tweets, len(summarizers))
@@ -76,19 +78,37 @@ def get_most_referenced_tweet_ids(
 
 
 def get_most_referenced_links(
-    tweets: Iterator[Tweet], top_n: int = 10,
+    tweets: Iterator[Tweet], top_n: int = 10, link_filter = None,
 ) -> List[LinkSummary]:
-    counter = Counter(
+    urls = (
         url.unwound_url or url.expanded_url
         for tweet in tweets
         if tweet.entities is not None
         for url in tweet.entities.urls
     )
 
+
+    filtered_urls = (
+        url for url in urls
+        if not link_filter or link_filter(url)
+    )
+
+    counter = Counter(filtered_urls)
+
     return [
         LinkSummary(url=url, total_references=count)
         for url, count in counter.most_common(top_n)
     ]
+
+
+def get_most_referenced_arxiv_links(tweets: Iterator[Tweet]) -> List[LinkSummary]:
+    return get_most_referenced_links(tweets, link_filter=is_arxiv)
+
+
+def is_arxiv(url: str) -> bool:
+    domain = urlparse(url).netloc.lower()
+    arxiv_domain = "arxiv.org"
+    return domain == arxiv_domain or domain.endswith(f".{arxiv_domain}")
 
 
 def get_most_mentioned_screen_names(
