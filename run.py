@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
@@ -5,6 +6,7 @@ from typing import List, Optional
 import typer
 
 from tweet_summary.twitter import fetch_recent_tweets
+from tweet_summary.substack import create_draft
 from tweet_summary.summarize import generate_tweet_summary
 
 
@@ -51,6 +53,12 @@ def summarize(
     summary = generate_tweet_summary(tweets)
 
     typer.echo(summary.json())
+
+
+@app.command()
+def substack(title: str):
+    draft = create_draft(title)
+    typer.echo("Done")
 
 
 if __name__ == "__main__":
