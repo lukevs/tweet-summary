@@ -42,7 +42,7 @@ def fetch(
 @app.command()
 def summarize(
     screen_names: typer.FileText,
-    since: datetime = typer.Argument(last_week),
+    since: datetime = typer.Argument(yesterday),
 ):
     tweets = fetch_recent_tweets(
         screen_names.read().split(), since,
