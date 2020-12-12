@@ -60,14 +60,11 @@ def _fetch_recent_tweets_page(
     if next_token is not None:
         params["next_token"] = next_token
 
-    try:
-        response = requests.get(
-            RECENT_SEARCH_ENDPOINT_URL,
-            headers=headers,
-            params=params,
-        )
-    except Expection as e:
-        import pdb; pdb.set_trace()
+    response = requests.get(
+        RECENT_SEARCH_ENDPOINT_URL,
+        headers=headers,
+        params=params,
+    )
 
     if response.ok:
         return TweetPage(**response.json())
