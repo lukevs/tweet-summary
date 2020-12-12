@@ -1,4 +1,6 @@
-from typing import List, Optional
+from __future__ import annotations
+from enum import Enum
+from typing import List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -28,13 +30,35 @@ class SubstackDraftByline(BaseModel):
     is_author: bool
 
 
-class SubstackDraftBodyContent(BaseModel):
-    type: str
+class SubstackDraftText(BaseModel):
+    type: str = "text"
+    text: str
 
 
-class SubstackDraftBody(BaseModel):
-    type: str
-    content: List[SubstackDraftBodyContent]
+class SubstackDraftParagraph(BaseModel):
+    type: str = "paragraph"
+    content: List[SubstackDraftText] = []
+
+
+class SubstackDraftAttrs(BaseModel):
+    level: int
+
+
+class SubstackDraftHeading(BaseModel):
+    type: str = "heading"
+    attrs: SubstackDraftAttrs
+    content: List[SubstackDraftText] = []
+
+
+SubstackDraftContent = Union[
+    SubstackDraftHeading,
+    SubstackDraftParagraph,
+]
+
+
+class SubstackDraftDoc(BaseModel):
+    type: str = "doc"
+    content: List[SubstackDraftContent] = []
 
 
 class SubstackDraftUpdate(BaseModel):

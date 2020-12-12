@@ -3,21 +3,38 @@ import requests
 
 from .schemas import (
     SubstackDraft,
-    SubstackDraftBody,
-    SubstackDraftBodyContent,
+    SubstackDraftAttrs,
+    SubstackDraftDoc,
+    SubstackDraftHeading,
+    SubstackDraftParagraph,
+    SubstackDraftText,
     SubstackDraftByline,
     SubstackDraftUpdate,
 )
 
 
 BASE_URL = "https://mltweets.substack.com"
-DRAFTS_ENDPOINT = "/api/v1/drafts"
 
-DEFAULT_DRAFT_BODY = SubstackDraftBody(
-    type="doc",
-    content=[SubstackDraftBodyContent(
-        type="paragraph",
-    )],
+DEFAULT_DRAFT_BODY = SubstackDraftDoc(
+    content=[
+        SubstackDraftParagraph(
+            content=[
+                SubstackDraftText(
+                    text="Hi there",
+                ),
+            ],
+        ),
+        SubstackDraftHeading(
+            attrs=SubstackDraftAttrs(
+                level=1,
+            ),
+            content=[
+                SubstackDraftText(
+                    text="Hi there",
+                ),
+            ],
+        ),
+    ],
 )
 
 DEFAULT_DRAFT_BYLINE = SubstackDraftByline(
@@ -62,7 +79,7 @@ def create_draft(title: str) -> SubstackDraft:
         type="newsletter",
     )
 
-    url = BASE_URL + DRAFTS_ENDPOINT
+    url = f"{BASE_URL}/api/v1/drafts"
     headers = {"Cookie": get_substack_cookie()}
     response = requests.post(url=url, headers=headers, json=draft.dict())
     return SubstackDraft(**response.json())
