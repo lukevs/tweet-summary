@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Iterator, List, Optional
 
 import requests
+from ratelimit import limits, sleep_and_retry
 
 from .schemas import Tweet, TweetPage
 
@@ -31,6 +32,8 @@ def fetch_recent_tweets(
                 break
 
 
+@sleep_and_retry
+@limits(calls=1, period=2)
 def _fetch_recent_tweets_page(
     query: str, start_time: datetime, next_token: Optional[str] = None,
 ) -> TweetPage:

@@ -27,3 +27,4 @@ class TweetSummary(BaseModel):
     most_referenced_tweets: List[ReferencedTweetSummary]
     most_referenced_links: List[LinkSummary]
     most_mentioned_screen_names: List[MentionSummary]
+    most_referenced_arxiv_links: List[LinkSummary]

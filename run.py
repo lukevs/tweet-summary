@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
@@ -7,11 +8,22 @@ from tweet_summary.twitter import fetch_recent_tweets
 from tweet_summary.summarize import generate_tweet_summary
 
 
+logging.basicConfig(
+    filename='debug.log',
+    format='%(asctime)s | %(levelname)s: %(message)s',
+    datefmt='%m/%d/%Y %I:%M:%S %p',
+    level=logging.DEBUG,
+)
+
 app = typer.Typer()
 
 
+def last_week() -> str:
+    return (datetime.now(timezone.utc) - timedelta(days=7) + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+
+
 def yesterday() -> str:
-    return (datetime.now(timezone.utc) - timedelta(1)).strftime("%Y-%m-%d %H:%M:%S")
+    return (datetime.now(timezone.utc) - timedelta(days=1) + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
 
 
 @app.command()
