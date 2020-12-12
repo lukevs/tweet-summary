@@ -17,10 +17,9 @@ TWITTER_TOKEN = os.getenv("TWITTER_TOKEN")
 def fetch_recent_tweets(
     screen_names: List[str], since: datetime,
 ) -> Iterator[Tweet]:
-    for query_index, query in enumerate(_generate_from_or_queries(screen_names)):
+    for query in _generate_from_or_queries(screen_names):
         next_token = None
 
-        page_index = 0
         while True:
             tweet_page = _fetch_recent_tweets_page(
                 query, since, next_token,
@@ -31,8 +30,6 @@ def fetch_recent_tweets(
             next_token = tweet_page.meta.next_token
             if next_token is None:
                 break
-
-            page_index += 1
 
 
 @sleep_and_retry
