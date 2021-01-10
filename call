@@ -1,0 +1,2 @@
+#!/bin/sh
+echo '{}' | http --timeout=300 POST :9000/2015-03-31/functions/function/invocations
