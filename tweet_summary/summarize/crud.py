@@ -4,10 +4,39 @@ from typing import Callable, Iterator, List
 from urllib.parse import urlparse
 
 from tweet_summary.twitter import Tweet
+from tweet_summary.substack import SubstackDraftDoc
 
 from .schemas import (
     LinkSummary, MentionSummary, ReferencedTweetSummary, TweetSummary,
 )
+
+
+# def format_substack_draft(summary: TweetSummary) -> SubstackDraftDoc:
+#     total_tweets = SubstackDraftParagraph(
+#         content=[SubstackDraftText(
+#             text=f"Total tweets: {summary.total_tweets}",
+#         )],
+#     )
+# 
+#     most_liked_tweets_heading = SubstackDraftHeading(
+#         attrs=SubstackDraftAttrs(level=3),
+#         content=[SubstackDraftText(text="MOST_LIKED_TWEETS")],
+#     )
+# 
+#     most_liked_tweets = [
+#         SubstackDraftParagraph(
+#             content=[SubstackDraftText(text=tweet.id)],
+#         )
+#         for tweet in summary.most_liked_tweets
+#     ]
+# 
+#     return SubstackDraftDoc(
+#         content=[
+#             total_tweets,
+#             most_liked_tweets_heading,
+#             **most_liked_tweets,
+#         ],
+#     )
 
 
 def generate_tweet_summary(

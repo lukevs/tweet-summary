@@ -1,16 +1,7 @@
 import os
 import requests
 
-from .schemas import (
-    SubstackDraft,
-    SubstackDraftAttrs,
-    SubstackDraftDoc,
-    SubstackDraftHeading,
-    SubstackDraftParagraph,
-    SubstackDraftText,
-    SubstackDraftByline,
-    SubstackDraftUpdate,
-)
+from .schemas import SubstackDraft, SubstackDraftAttrs, SubstackDraftByline, SubstackDraftDoc, SubstackDraftHeading, SubstackDraftParagraph, SubstackDraftText
 
 
 BASE_URL = "https://mltweets.substack.com"
@@ -67,14 +58,14 @@ def get_substack_cookie():
     return os.getenv("SUBSTACK_COOKIE")
 
 
-def create_draft(title: str) -> SubstackDraft:
+def create_draft(title: str, body: SubstackDraftDoc) -> SubstackDraft:
     draft = SubstackDraftUpdate(
         draft_title=title,
         draft_subtitle="",
         draft_bylines=[DEFAULT_DRAFT_BYLINE],
         draft_podcast_url="",
         draft_podcast_duration=None,
-        draft_body=DEFAULT_DRAFT_BODY.json(),
+        draft_body=body.json(),
         audience="everyone",
         type="newsletter",
     )
