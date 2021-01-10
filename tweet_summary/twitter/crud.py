@@ -11,18 +11,17 @@ from .schemas import Tweet, TweetPage
 MAX_QUERY_SIZE = 512
 API_BASE_URL = "https://api.twitter.com"
 RECENT_SEARCH_ENDPOINT_URL = f"{API_BASE_URL}/2/tweets/search/recent"
-TWITTER_TOKEN = os.getenv("TWITTER_TOKEN")
 
 
 def fetch_recent_tweets(
-    screen_names: List[str], since: datetime,
+    auth_token: str, screen_names: List[str], since: datetime,
 ) -> Iterator[Tweet]:
     for query in _generate_from_or_queries(screen_names):
         next_token = None
 
         while True:
             tweet_page = _fetch_recent_tweets_page(
-                query, since, next_token,
+                auth_token, query, since, next_token,
             )
 
             yield from tweet_page.data
@@ -35,7 +34,10 @@ def fetch_recent_tweets(
 @sleep_and_retry
 @limits(calls=1, period=2)
 def _fetch_recent_tweets_page(
-    query: str, start_time: datetime, next_token: Optional[str] = None,
+    auth_token: str,
+    query: str,
+    start_time: datetime,
+    next_token: Optional[str] = None,
 ) -> TweetPage:
     tweet_fields = ",".join([
         "public_metrics",
@@ -45,13 +47,13 @@ def _fetch_recent_tweets_page(
 
     params = {
         "query": query,
-        "start_time": f"{start_time.isoformat()}Z",
+        "start_time": f"{start_time.isoformat()}",
         "tweet.fields": tweet_fields,
         "max_results": 100,
     }
 
     headers = {
-        "Authorization": f"Bearer {TWITTER_TOKEN}",
+        "Authorization": f"Bearer {auth_token}",
     }
 
     if next_token is not None:
