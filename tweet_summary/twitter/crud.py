@@ -10,6 +10,7 @@ from .schemas import Tweet, TweetPage, TwitterUser
 
 
 MAX_QUERY_SIZE = 512
+MAX_USER_LOOKUPS = 100
 API_BASE_URL = "https://api.twitter.com"
 RECENT_SEARCH_ENDPOINT_URL = f"{API_BASE_URL}/2/tweets/search/recent"
 USER_LOOKUP_ENDPOINT_URL = f"{API_BASE_URL}/1.1/users/lookup.json"
@@ -101,17 +102,27 @@ def fetch_users(
         "Authorization": f"Bearer {auth_token}",
     }
 
-    params = {
-        "screen_name": ",".join(screen_names)
-    }
+    users = []
 
-    response = requests.post(
-        USER_LOOKUP_ENDPOINT_URL,
-        headers=headers,
-        params=params,
-    )
+    for screen_names_batch in _batch(screen_names, MAX_USER_LOOKUPS):
+        params = {
+            "screen_name": ",".join(screen_names)
+        }
 
-    if response.ok:
-        return parse_obj_as(List[TwitterUser], response.json())
-    else:
-        raise RuntimeError(f"Failed to fetch users: {response.text}")
+        response = requests.post(
+            USER_LOOKUP_ENDPOINT_URL,
+            headers=headers,
+            params=params,
+        )
+
+        if response.ok:
+            users += parse_obj_as(List[TwitterUser], response.json())
+        else:
+            raise RuntimeError(f"Failed to fetch users: {response.text}")
+
+    return users
+
+
+def _batch(elems: List, batch_size: int) -> List[List]:
+    for i in range(0, len(elems), batch_size):
+        yield elems[i:i+batch_size]

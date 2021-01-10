@@ -44,3 +44,5 @@ class TweetPage(BaseModel):
 
 class TwitterUser(BaseModel):
     id: str
+    screen_name: str
+    followers_count: int
