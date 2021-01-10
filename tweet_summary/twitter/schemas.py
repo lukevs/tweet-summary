@@ -40,3 +40,7 @@ class TweetPageMeta(BaseModel):
 class TweetPage(BaseModel):
     data: List[Tweet] = []
     meta: TweetPageMeta
+
+
+class TwitterUser(BaseModel):
+    id: str

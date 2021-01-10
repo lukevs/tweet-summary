@@ -3,14 +3,16 @@ from datetime import datetime
 from typing import Iterator, List, Optional
 
 import requests
+from pydantic import parse_obj_as
 from ratelimit import limits, sleep_and_retry
 
-from .schemas import Tweet, TweetPage
+from .schemas import Tweet, TweetPage, TwitterUser
 
 
 MAX_QUERY_SIZE = 512
 API_BASE_URL = "https://api.twitter.com"
 RECENT_SEARCH_ENDPOINT_URL = f"{API_BASE_URL}/2/tweets/search/recent"
+USER_LOOKUP_ENDPOINT_URL = f"{API_BASE_URL}/1.1/users/lookup.json"
 
 
 def fetch_recent_tweets(
@@ -90,3 +92,26 @@ def _generate_from_or_queries(screen_names: List[str]) -> Iterator[str]:
             query = query_update
 
     yield query
+
+
+def fetch_users(
+    auth_token: str, screen_names: List[str],
+) -> List[TwitterUser]:
+    headers = {
+        "Authorization": f"Bearer {auth_token}",
+    }
+
+    params = {
+        "screen_name": ",".join(screen_names)
+    }
+
+    response = requests.post(
+        USER_LOOKUP_ENDPOINT_URL,
+        headers=headers,
+        params=params,
+    )
+
+    if response.ok:
+        return parse_obj_as(List[TwitterUser], response.json())
+    else:
+        raise RuntimeError(f"Failed to fetch users: {response.text}")
